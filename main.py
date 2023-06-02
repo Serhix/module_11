@@ -20,7 +20,7 @@ class AddressBook(UserDict):    # Наслідується від UserDict, сл
             data_output.append(record)
             iter_index += 1
             if iter_index >= N:
-                yield data_output
+                yield data_output 
                 data_output = []
                 iter_index = 0
         if data_output:
