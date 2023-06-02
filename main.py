@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class AddressBook(UserDict):    # Наслідується від UserDict, словник з полями name, phone....
-    
+  
     def add_record(self, record):
         self.data[record.name.value] = record
 
@@ -12,6 +12,21 @@ class AddressBook(UserDict):    # Наслідується від UserDict, сл
             if record.name.value.lower() == name.lower():
                 return record
         return None
+
+    def iterator(self, N = 3):
+        data_output = []
+        iter_index = 0
+        for record in self.data.values():
+            data_output.append(record)
+            iter_index += 1
+            if iter_index >= N:
+                yield data_output
+                data_output = []
+                iter_index = 0
+        if data_output:
+            yield data_output
+
+        
         
 class Record:                   # Відповідає за логіку додавання/видалення/редагування необов'язкових полів та зберігання обов'язкового поля Name.
   
@@ -27,7 +42,6 @@ class Record:                   # Відповідає за логіку дод�
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
 
-
     def delete_phone(self, phone):
         for phone_number in self.phones:
             if phone_number.value == phone:
@@ -42,7 +56,11 @@ class Record:                   # Відповідає за логіку дод�
     
     def days_to_birthday(self):
         if self.has_birthday == True:
-            birthday_in_this_year = datetime(year=datetime.now().year, month=str_to_date(self.birthday.value).month, day=str_to_date(self.birthday.value).day)
+            birthday_in_this_year = datetime(
+                year=datetime.now().year, 
+                month=str_to_date(self.birthday.value).month, 
+                day=str_to_date(self.birthday.value).day
+            )
             if birthday_in_this_year.date() == datetime.now().date():
                 return 'Birthday today'
             elif birthday_in_this_year.date() < datetime.now().date():
@@ -52,15 +70,23 @@ class Record:                   # Відповідає за логіку дод�
             return f'Birthday in {how_many_days.days} days!'
         return f'No birthday added for contact {self.name}'
     
+    def __str__(self) -> str:
+        if self.has_birthday:
+            return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}, birthday: {self.birthday.value}!'
+        return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}'
+
+    
     
 
 class Field:                    # Батьківський для всіх полів, у ньому потім реалізуємо логіку, загальну для всіх полів.
+
     def __init__(self, value):
         self.__value = None
         self.value = value
 
 
 class Name(Field):              # Обов'язкове поле з ім'ям
+
     @property
     def value(self):
         return self.__value
@@ -73,8 +99,8 @@ class Name(Field):              # Обов'язкове поле з ім'ям
             print('Incorect name! setter')
     
 
-
 class Phone(Field):             # Необов'язкове поле з телефоном та таких один запис (Record) може містити кілька.
+
     @property
     def value(self):
         return self.__value
@@ -86,11 +112,12 @@ class Phone(Field):             # Необов'язкове поле з теле
         else:
             print('Incorect phone! setter')
 
+
 class Birthday(Field):             # Необов'язкове поле з днем народження. може бути лише одне
+
     @property
     def value(self):
         return self.__value
-    
     
     @value.setter
     def value(self, new_value):
@@ -104,7 +131,6 @@ class Birthday(Field):             # Необов'язкове поле з дн�
 
 
 # блок функцій з модуля 9(змінено)
-
 
 def input_error(func):
     
@@ -176,9 +202,7 @@ def info(data):                                # пошук по name
     record = address_book.get_record_from_book(name.value)
     if not record:
         return f'Contact with name {name.value} not found'
-    if record.has_birthday:
-        return f'Name: {name.value}, phone: {", ".join(j.value for j in record.phones)}, birthday: {record.birthday.value}!'
-    return f'Name: {name.value}, phone: {", ".join(j.value for j in record.phones)}'
+    return str(record)
 
 def when_birthday(data):                                # пошук по name
     name = parse_data(data)[0]
@@ -188,19 +212,16 @@ def when_birthday(data):                                # пошук по name
         return f'Contact with name {name.value} not found'
     return record.days_to_birthday()
 
-
-
-    
-
-def show_all():                                 #вивід всієї книги
-    if not address_book.data: 
-        return 'Maybe namber list is empty!'
-    else:
-        print('Contact list:')
-        result = []
-        for phone in address_book.data.values():
-            result.append(f'name: {phone.name.value}, phone: {", ".join(j.value for j in phone.phones)}') 
-        return '\n'.join(result)
+def show_all(data):
+    N = int(parse_data(data)[0])
+    all_book = ''
+    page_number = 1
+    for page in address_book.iterator(N):
+        all_book += f'Page -- {page_number} -- \n'
+        for record in page:
+            all_book += f'{str(record)} \n'
+        page_number += 1
+    return all_book
 
 def exit_func():
     return 'Good bye!'
@@ -208,20 +229,10 @@ def exit_func():
 def incorrect_input():
     return 'incorrect command input'
 
-def sanitize_phone(phone):
-    new_phone = (
-        phone.removeprefix("+")
-            .replace("(", "")
-            .replace(")", "")
-            .replace("-", "")
-    )
-    return new_phone
-
 def parse_data(data):
     new_data = []
     for field in data.strip().split():
         new_data.append(field)
-
     return new_data
 
 def str_to_date(value: str): # dd.mm.yyyy
@@ -241,7 +252,8 @@ def choise_comand(request):
     'close': exit_func, 
     'exit': exit_func,
     'good bye': exit_func,
-    'when birthday': when_birthday
+    'when birthday': when_birthday,
+
 }
     comand = request
     data = ''
@@ -254,7 +266,6 @@ def choise_comand(request):
         return COMANDS.get(comand, incorrect_input)(data)
     return COMANDS.get(comand, incorrect_input)()
 
-
 def main():
     while True:
         request = input('- ').lower()
@@ -262,7 +273,6 @@ def main():
         print(result)
         if result == 'Good bye!':
             break
-
 
 
 if __name__ == '__main__':
