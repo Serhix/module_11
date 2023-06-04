@@ -34,7 +34,6 @@ class Record:                   # Відповідає за логіку дод�
         self.name = Name(name)
         self.phones = []
         self.birthday = ''
-        self.has_birthday = False
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
@@ -55,7 +54,7 @@ class Record:                   # Відповідає за логіку дод�
                 break
     
     def days_to_birthday(self):
-        if self.has_birthday == True:
+        if self.birthday.value == True:
             birthday_in_this_year = datetime(
                 year=datetime.now().year, 
                 month=str_to_date(self.birthday.value).month, 
@@ -71,7 +70,7 @@ class Record:                   # Відповідає за логіку дод�
         return f'No birthday added for contact {self.name}'
     
     def __str__(self) -> str:
-        if self.has_birthday:
+        if self.birthday.value:
             return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}, birthday: {self.birthday.value}!'
         return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}'
 
@@ -95,8 +94,7 @@ class Name(Field):              # Обов'язкове поле з ім'ям
     def value(self, new_value):
         if new_value and not new_value.isnumeric():
             self.__value = new_value
-        else:
-            print('Incorect name! setter')
+
     
 
 class Phone(Field):             # Необов'язкове поле з телефоном та таких один запис (Record) може містити кілька.
@@ -109,8 +107,7 @@ class Phone(Field):             # Необов'язкове поле з теле
     def value(self, new_value):
         if new_value.isnumeric():
             self.__value = new_value
-        else:
-            print('Incorect phone! setter')
+
 
 
 class Birthday(Field):             # Необов'язкове поле з днем народження. може бути лише одне
@@ -125,9 +122,6 @@ class Birthday(Field):             # Необов'язкове поле з дн�
         birthday_date = str_to_date(new_value)
         if birthday_date.year > 1900 and birthday_date <= datetime.now():
             self.__value = new_value
-        else:
-            print('Incorect birthday!')
-
 
 
 # блок функцій з модуля 9(змінено)
@@ -168,7 +162,6 @@ def add_birthday(data):                                    # додаємо birt
     if not record:
         record = Record(name.value)
     record.add_birthday(birthday.value)
-    record.has_birthday = True
     address_book.add_record(record)
     return 'Birthday added!'
 
