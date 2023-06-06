@@ -54,7 +54,7 @@ class Record:                   # Відповідає за логіку дод�
                 break
     
     def days_to_birthday(self):
-        if self.birthday.value == True:
+        if self.birthday:
             birthday_in_this_year = datetime(
                 year=datetime.now().year, 
                 month=str_to_date(self.birthday.value).month, 
@@ -67,12 +67,14 @@ class Record:                   # Відповідає за логіку дод�
             else:
                 how_many_days = datetime(year=datetime.now().year, month=birthday_in_this_year.month, day=birthday_in_this_year.day) - datetime.now()
             return f'Birthday in {how_many_days.days} days!'
-        return f'No birthday added for contact {self.name}'
+        return f'No birthday added for contact {self.name.value}'
     
     def __str__(self) -> str:
-        if self.birthday.value:
+
+        if self.birthday:
             return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}, birthday: {self.birthday.value}!'
-        return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}'
+        return f'Name: {self.name.value}, phone: {", ".join(j.value for j in self.phones)}'         
+
 
     
     
